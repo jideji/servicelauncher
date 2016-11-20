@@ -6,11 +6,12 @@ import (
 	"io/ioutil"
 	"os/exec"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
 type Process struct {
-	Pid         string
+	Pid         int
 	CommandLine string
 }
 
@@ -23,6 +24,9 @@ func FindByCommandLine(regex string) (*Process, error) {
 	}
 
 	procs, err := allProcesses()
+	if err != nil {
+		return nil, err
+	}
 
 	var filtered []*Process
 
@@ -32,11 +36,31 @@ func FindByCommandLine(regex string) (*Process, error) {
 		}
 	}
 
-	if len(filtered) != 1 {
-		return nil, fmt.Errorf("Did not find exactly one match - found %d", len(procs))
+	if len(filtered) > 1 {
+		return nil, fmt.Errorf("Found more than one match - found %d", len(procs))
+	}
+
+	if len(filtered) == 0 {
+		return nil, nil
 	}
 
 	return filtered[0], nil
+}
+
+// FindByPid finds a process by its pid.
+func FindByPid(pid int) (*Process, error) {
+	procs, err := allProcesses()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, p := range procs {
+		if p.Pid == pid {
+			return p, nil
+		}
+	}
+
+	return nil, nil
 }
 
 func allProcesses() ([]*Process, error) {
@@ -64,12 +88,16 @@ func allProcesses() ([]*Process, error) {
 
 	var ps []*Process
 	for _, line := range lines {
-		fields := strings.SplitN(line, " ", 2)
+		fields := strings.SplitN(strings.TrimSpace(line), " ", 2)
 		if len(fields) != 2 {
 			continue
 		}
 
-		pid := strings.TrimSpace(fields[0])
+		pid, err := strconv.Atoi(fields[0])
+		if err != nil {
+			return nil, err
+		}
+
 		commandline := strings.TrimSpace(fields[1])
 
 		p := Process{pid, commandline}
