@@ -21,10 +21,7 @@ type Process struct {
 // FindByCommandLine finds a process using a regex.
 // Returns an error if there is not exactly one match.
 func FindByCommandLine(regex string) (*Process, error) {
-	r, err := regexp.Compile(regex)
-	if err != nil {
-		return nil, err
-	}
+	r := regexp.MustCompile(regex)
 
 	procs, err := allProcesses()
 	if err != nil {

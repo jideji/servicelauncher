@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"github.com/jideji/servicelauncher/config"
-	"github.com/jideji/servicelauncher/procs"
 	"os"
 )
 
@@ -25,23 +24,24 @@ func main() {
 		os.Exit(10)
 	}
 
-	pr, err := procs.FindByCommandLine(service.Pattern)
-	if err != nil {
-		panic(err)
-	}
+	running := service.IsRunning()
 
 	if action == "stop" || action == "restart" {
-		if pr != nil {
-			fmt.Printf("Killing process %d.\n", pr.Pid)
-			pr.Kill()
-			pr = nil
+		if running {
+			pid, err := service.Pid()
+			if err != nil {
+				panic(err)
+			}
+			fmt.Printf("Killing process %d.\n", pid)
+			service.Stop()
+			running = false
 		} else {
 			fmt.Println("Not running.")
 		}
 	}
 
 	if action == "start" || action == "restart" {
-		if pr != nil {
+		if running {
 			println(fmt.Sprintf("Service '%s' already running. Try restart.", service.Name))
 			os.Exit(11)
 		}
