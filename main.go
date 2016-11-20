@@ -13,27 +13,34 @@ func main() {
 	}
 
 	action := os.Args[1]
-	var serviceName string
-	if len(os.Args) >= 3 {
-		serviceName = os.Args[2]
-	}
 
 	services := config.LoadServices()
 
-	if len(serviceName) == 0 {
-		for _, service := range services {
-			doAction(service, action)
+	selected := resolveServices(services, os.Args[2:]...)
+
+	for _, service := range selected {
+		doAction(service, action)
+	}
+}
+
+func resolveServices(services map[string]*service.Service, names ...string) []*service.Service {
+	var selected []*service.Service
+	if len(names) > 0 {
+		for _, name := range names {
+			service, ok := services[name]
+			if !ok {
+				println(fmt.Sprintf("No service named '%s' found.", name))
+				os.Exit(10)
+			}
+			selected = append(selected, service)
 		}
-		return
+	} else {
+		for _, service := range services {
+			selected = append(selected, service)
+		}
 	}
 
-	service := services[serviceName]
-	if service == nil {
-		println(fmt.Sprintf("No service named '%s' found.", serviceName))
-		os.Exit(10)
-	}
-
-	doAction(service, action)
+	return selected
 }
 
 func doAction(service *service.Service, action string) {
