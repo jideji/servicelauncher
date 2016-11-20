@@ -37,7 +37,7 @@ func FindByCommandLine(regex string) (*Process, error) {
 	}
 
 	if len(filtered) > 1 {
-		return nil, fmt.Errorf("Found more than one match - found %d", len(procs))
+		return nil, fmt.Errorf("Found more than one match - found %d", len(filtered))
 	}
 
 	if len(filtered) == 0 {
