@@ -3,25 +3,29 @@ package main
 import (
 	"fmt"
 	"github.com/jideji/servicelauncher/config"
+	"github.com/jideji/servicelauncher/service"
 	"os"
 )
 
 func main() {
-	if len(os.Args) != 3 {
-		fmt.Fprint(os.Stderr, "SYNTAX:\n")
-		fmt.Fprintf(os.Stderr, "\t%s <action> <service name>\n", os.Args[0])
-		fmt.Fprint(os.Stderr, "Examples:\n")
-		fmt.Fprintf(os.Stderr, "\t%s start httpserver\n", os.Args[0])
-		fmt.Fprintf(os.Stderr, "\t%s stop httpserver\n", os.Args[0])
-		fmt.Fprintf(os.Stderr, "\t%s restart httpserver\n", os.Args[0])
-		fmt.Fprintf(os.Stderr, "\t%s status httpserver\n", os.Args[0])
-		os.Exit(1)
+	if len(os.Args) < 2 {
+		showHelp()
 	}
 
 	action := os.Args[1]
-	serviceName := os.Args[2]
+	var serviceName string
+	if len(os.Args) >= 3 {
+		serviceName = os.Args[2]
+	}
 
 	services := config.LoadServices()
+
+	if len(serviceName) == 0 {
+		for _, service := range services {
+			doAction(service, action)
+		}
+		return
+	}
 
 	service := services[serviceName]
 	if service == nil {
@@ -29,6 +33,10 @@ func main() {
 		os.Exit(10)
 	}
 
+	doAction(service, action)
+}
+
+func doAction(service *service.Service, action string) {
 	running := service.IsRunning()
 
 	if action == "status" {
@@ -38,7 +46,7 @@ func main() {
 		} else {
 			fmt.Printf("Service '%s' is not running.\n", service.Name)
 		}
-		os.Exit(0)
+		return
 	}
 
 	if action == "stop" || action == "restart" {
@@ -66,4 +74,15 @@ func main() {
 		}
 		fmt.Printf("Service '%s' started with pid %d.\n", service.Name, p.Pid)
 	}
+}
+
+func showHelp() {
+	fmt.Fprint(os.Stderr, "SYNTAX:\n")
+	fmt.Fprintf(os.Stderr, "\t%s <action> [<service name>]\n", os.Args[0])
+	fmt.Fprint(os.Stderr, "Actions:\n")
+	fmt.Fprint(os.Stderr, "\tstart, stop, restart, status\n")
+	fmt.Fprint(os.Stderr, "Examples:\n")
+	fmt.Fprintf(os.Stderr, "\t%s start httpserver\n", os.Args[0])
+	fmt.Fprintf(os.Stderr, "\t%s status\n", os.Args[0])
+	os.Exit(1)
 }
