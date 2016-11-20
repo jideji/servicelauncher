@@ -10,6 +10,11 @@ func main() {
 	if len(os.Args) != 3 {
 		fmt.Fprint(os.Stderr, "SYNTAX:\n")
 		fmt.Fprintf(os.Stderr, "\t%s <action> <service name>\n", os.Args[0])
+		fmt.Fprint(os.Stderr, "Examples:\n")
+		fmt.Fprintf(os.Stderr, "\t%s start httpserver\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "\t%s stop httpserver\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "\t%s restart httpserver\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "\t%s status httpserver\n", os.Args[0])
 		os.Exit(1)
 	}
 
@@ -25,6 +30,16 @@ func main() {
 	}
 
 	running := service.IsRunning()
+
+	if action == "status" {
+		if running {
+			pid, _ := service.Pid()
+			fmt.Printf("Service '%s' is running with pid %d.\n", service.Name, pid)
+		} else {
+			fmt.Printf("Service '%s' is not running.\n", service.Name)
+		}
+		os.Exit(0)
+	}
 
 	if action == "stop" || action == "restart" {
 		if running {
