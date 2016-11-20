@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/jideji/servicelauncher/procs"
-	"github.com/jideji/servicelauncher/props"
+	"github.com/jideji/servicelauncher/config"
 	"os"
 )
 
@@ -11,7 +11,7 @@ func main() {
 	action := os.Args[1]
 	serviceName := os.Args[2]
 
-	services := props.LoadServices()
+	services := config.LoadServices()
 
 	service := services[serviceName]
 	if service == nil {
