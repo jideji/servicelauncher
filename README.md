@@ -22,6 +22,28 @@ service.ncserver.pattern = ^nc -l 8081$
 service.ncserver.command = nc -l 8081
 ```
 
+### Ideas
+
+ - Command line tool
+ - Terminal UI
+ - Web UI with the same controls
+ - Ability to see logs
+   - Command line:
+     - cat
+     - tail
+   - UI:
+     - Highlight failures (based on regex?)
+       - Scroll to failure
+     - Allow for automatically switching log file displayed when an exception happens
+ - Support for labeling services (e.g. materializers)
+   - Make sure all services with a certain label are running
+   - Disable a service temporarily, e.g. when developing it
+
+### Useful links
+ - Pseudo terminal for disabling buffering:
+   https://github.com/kr/pty
+
+
 ## Apache License Version 2.0
 
    Copyright 2016 Daniel Josefsson
