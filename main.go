@@ -2,12 +2,18 @@ package main
 
 import (
 	"fmt"
-	"github.com/jideji/servicelauncher/procs"
 	"github.com/jideji/servicelauncher/config"
+	"github.com/jideji/servicelauncher/procs"
 	"os"
 )
 
 func main() {
+	if len(os.Args) != 3 {
+		fmt.Fprint(os.Stderr, "SYNTAX:\n")
+		fmt.Fprintf(os.Stderr, "\t%s <action> <service name>\n", os.Args[0])
+		os.Exit(1)
+	}
+
 	action := os.Args[1]
 	serviceName := os.Args[2]
 
@@ -15,8 +21,8 @@ func main() {
 
 	service := services[serviceName]
 	if service == nil {
-		println(fmt.Sprintf("No service '%s' found", serviceName))
-		os.Exit(1)
+		println(fmt.Sprintf("No service named '%s' found.", serviceName))
+		os.Exit(10)
 	}
 
 	pr, err := procs.FindByCommandLine(service.Pattern)
@@ -37,7 +43,7 @@ func main() {
 	if action == "start" || action == "restart" {
 		if pr != nil {
 			println(fmt.Sprintf("Service '%s' already running. Try restart.", service.Name))
-			os.Exit(10)
+			os.Exit(11)
 		}
 		p, err := service.Start()
 		if err != nil {
