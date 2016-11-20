@@ -12,6 +12,7 @@ import (
 	"time"
 )
 
+// Process represents a running process.
 type Process struct {
 	Pid         int
 	CommandLine string
@@ -65,6 +66,9 @@ func FindByPid(pid int) (*Process, error) {
 	return nil, nil
 }
 
+// Kill sends a kill signal to a process.
+// It then waits (up to 5 seconds) for it do die.
+// If it doesn't die within the time limit, an error is returned.
 func (p *Process) Kill() error {
 	syscall.Kill(p.Pid, syscall.SIGKILL)
 

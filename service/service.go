@@ -8,12 +8,15 @@ import (
 	"syscall"
 )
 
+// Service represents a service that can be started.
 type Service struct {
 	Name    string
 	Pattern string
 	Command string
 }
 
+// Start runs the service using the service command.
+// It redirects stdout+stderr to /tmp/<servicename>.log.
 func (s Service) Start() (*procs.Process, error) {
 	logfile, err := os.Create(fmt.Sprintf("/tmp/%s.log", s.Name))
 	if err != nil {

@@ -9,6 +9,8 @@ import (
 
 var regex = regexp.MustCompile(`^(service\.([^.]+))\.command`)
 
+// LoadServices loads service definitions from the config file ($HOME/.slcfg).
+// It will panic if the file does not exist.
 func LoadServices() map[string]*service.Service {
 	p := properties.MustLoadFile(os.ExpandEnv("$HOME/.slcfg"), properties.UTF8)
 
