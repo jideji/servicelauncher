@@ -8,6 +8,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"syscall"
+	"time"
 )
 
 type Process struct {
@@ -61,6 +63,27 @@ func FindByPid(pid int) (*Process, error) {
 	}
 
 	return nil, nil
+}
+
+func (p *Process) Kill() error {
+	syscall.Kill(p.Pid, syscall.SIGKILL)
+
+	limit := time.After(5 * time.Second)
+	for {
+		p, err := FindByPid(p.Pid)
+		if err != nil {
+			return err
+		}
+		if p == nil {
+			return nil
+		}
+
+		select {
+		case <-limit:
+			return fmt.Errorf("Timed out waiting for %d to die.", p.Pid)
+		case <-time.Tick(100 * time.Millisecond):
+		}
+	}
 }
 
 func allProcesses() ([]*Process, error) {

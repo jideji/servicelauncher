@@ -24,7 +24,17 @@ func main() {
 		panic(err)
 	}
 
-	if action == "start" {
+	if action == "restart" {
+		if pr != nil {
+			fmt.Printf("Killing process %d.\n", pr.Pid)
+			pr.Kill()
+		}
+		p, err := service.Start()
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf("Service '%s' started with pid %d.\n", service.Name, p.Pid)
+	} else if action == "start" {
 		if pr != nil {
 			println(fmt.Sprintf("Service '%s' already running. Try restart.", service.Name))
 			os.Exit(10)
