@@ -14,6 +14,7 @@ type Service struct {
 	Name    string
 	Pattern string
 	Command string
+	Directory string
 	process *procs.Process
 }
 
@@ -26,6 +27,7 @@ func (s *Service) Start() (*procs.Process, error) {
 	}
 
 	cmd := exec.Command("bash", "-c", s.Command)
+	cmd.Dir = s.Directory
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	cmd.Stdout = logfile
 	cmd.Stderr = logfile
