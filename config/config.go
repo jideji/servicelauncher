@@ -22,11 +22,13 @@ func LoadServices() map[string]*service.Service {
 			name := submatch[2]
 			command := p.MustGetString(prefix + ".command")
 			commandPattern := p.MustGetString(prefix + ".pattern")
+			directory := p.GetString(prefix + ".directory", "")
 
 			srv := service.Service{
 				Name:    name,
 				Pattern: commandPattern,
 				Command: command,
+				Directory: directory,
 			}
 			services[name] = &srv
 		}
