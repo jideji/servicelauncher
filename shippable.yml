@@ -1,0 +1,12 @@
+language: go
+
+go:
+  - 1.7
+
+build:
+
+  ci:
+    - mkdir -p $GOPATH/bin
+    - curl https://glide.sh/get | sh
+    - glide install --force
+    - go build

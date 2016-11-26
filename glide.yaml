@@ -1,0 +1,4 @@
+package: github.com/jideji/servicelauncher
+import:
+- package: github.com/magiconair/properties
+  version: ^1.7.0
