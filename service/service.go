@@ -11,11 +11,11 @@ import (
 
 // Service represents a service that can be started.
 type Service struct {
-	Name    string
-	Pattern string
-	Command string
+	Name      string
+	Pattern   string
+	Command   string
 	Directory string
-	process *procs.Process
+	process   *procs.Process
 }
 
 // Start runs the service using the service command.
