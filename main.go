@@ -18,9 +18,18 @@ func main() {
 
 	selected := resolveServices(services, os.Args[2:]...)
 
+	lastErrCode := 0
 	for _, service := range selected {
-		doAction(service, action)
+		err := doAction(service, action)
+		if err != nil {
+			if c, ok := err.(CmdError); ok {
+				println(c.Msg)
+				lastErrCode = c.Code
+			}
+		}
 	}
+
+	os.Exit(lastErrCode)
 }
 
 func resolveServices(services map[string]*service.Service, names ...string) []*service.Service {
@@ -43,7 +52,7 @@ func resolveServices(services map[string]*service.Service, names ...string) []*s
 	return selected
 }
 
-func doAction(service *service.Service, action string) {
+func doAction(service *service.Service, action string) error {
 	running := service.IsRunning()
 
 	if action == "status" {
@@ -53,34 +62,34 @@ func doAction(service *service.Service, action string) {
 		} else {
 			fmt.Printf("Service '%s' is not running.\n", service.Name)
 		}
-		return
+		return nil
 	}
 
 	if action == "stop" || action == "restart" {
 		if running {
 			pid, err := service.Pid()
 			if err != nil {
-				panic(err)
+				return err
 			}
-			fmt.Printf("Killing process %d.\n", pid)
+			fmt.Printf("Killing service '%s' (process %d).\n", service.Name, pid)
 			service.Stop()
 			running = false
 		} else {
-			fmt.Println("Not running.")
+			fmt.Printf("Service '%s' not running.\n", service.Name)
 		}
 	}
 
 	if action == "start" || action == "restart" {
 		if running {
-			println(fmt.Sprintf("Service '%s' already running. Try restart.", service.Name))
-			os.Exit(11)
+			return cmdError(fmt.Sprintf("Service '%s' already running. Try restart.", service.Name), 11)
 		}
 		p, err := service.Start()
 		if err != nil {
-			panic(err)
+			return err
 		}
 		fmt.Printf("Service '%s' started with pid %d.\n", service.Name, p.Pid)
 	}
+	return nil
 }
 
 func showHelp() {
@@ -92,4 +101,17 @@ func showHelp() {
 	fmt.Fprintf(os.Stderr, "\t%s start httpserver\n", os.Args[0])
 	fmt.Fprintf(os.Stderr, "\t%s status\n", os.Args[0])
 	os.Exit(1)
+}
+
+func cmdError(msg string, code int) error {
+	return CmdError{Msg: msg, Code: code}
+}
+
+type CmdError struct {
+	Msg  string
+	Code int
+}
+
+func (c CmdError) Error() string {
+	return c.Msg
 }
