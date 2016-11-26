@@ -1,3 +1,5 @@
 *.iml
 .idea/
+glide.lock
+vendor/
 servicelauncher
