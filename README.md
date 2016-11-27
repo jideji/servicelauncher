@@ -1,4 +1,4 @@
-# Service Launcher
+# Service Launcher ![Build status](https://api.shippable.com/projects/5838cce5c5316610006b601c/badge?branch=master)
 
 **Note: This project is currently in development and isn't even in ALPHA state.**
 
