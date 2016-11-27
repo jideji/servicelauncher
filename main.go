@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/jideji/servicelauncher/config"
 	"github.com/jideji/servicelauncher/service"
+	"github.com/jideji/servicelauncher/web"
+	"net/http"
 	"os"
 )
 
@@ -15,6 +17,17 @@ func main() {
 	action := os.Args[1]
 
 	services := config.LoadServices()
+
+	if action == "server" {
+		h := web.WebHandler(services)
+		http.Handle("/", h)
+		fmt.Println("Listening on port :8080")
+		err := http.ListenAndServe(":8080", nil)
+		if err != nil {
+			panic(err)
+		}
+		return
+	}
 
 	selected := resolveServices(services, os.Args[2:]...)
 
@@ -99,6 +112,7 @@ func doAction(srv service.Service, action string) error {
 func showHelp() {
 	fmt.Fprint(os.Stderr, "SYNTAX:\n")
 	fmt.Fprintf(os.Stderr, "\t%s <action> [<service name>]\n", os.Args[0])
+	fmt.Fprintf(os.Stderr, "\t%s server\n", os.Args[0])
 	fmt.Fprint(os.Stderr, "Actions:\n")
 	fmt.Fprint(os.Stderr, "\tstart, stop, restart, status\n")
 	fmt.Fprint(os.Stderr, "Examples:\n")

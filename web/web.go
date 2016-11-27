@@ -39,6 +39,7 @@ func WebHandler(services service.Services) http.Handler {
 			})
 		}
 
+		w.Header().Set("content-type", "application/json")
 		enc := json.NewEncoder(w)
 		err := enc.Encode(GetServices{Services: statuses})
 
