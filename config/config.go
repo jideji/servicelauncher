@@ -11,10 +11,10 @@ var regex = regexp.MustCompile(`^(service\.([^.]+))\.command`)
 
 // LoadServices loads service definitions from the config file ($HOME/.slcfg).
 // It will panic if the file does not exist.
-func LoadServices() map[string]*service.Service {
+func LoadServices() service.Services {
 	p := properties.MustLoadFile(os.ExpandEnv("$HOME/.slcfg"), properties.UTF8)
 
-	services := make(map[string]*service.Service)
+	services := make(map[string]service.Service)
 	for _, key := range p.Keys() {
 		if regex.MatchString(key) {
 			submatch := regex.FindStringSubmatch(key)
@@ -22,15 +22,14 @@ func LoadServices() map[string]*service.Service {
 			name := submatch[2]
 			command := p.MustGetString(prefix + ".command")
 			commandPattern := p.MustGetString(prefix + ".pattern")
-			directory := p.GetString(prefix + ".directory", "")
+			directory := p.GetString(prefix+".directory", "")
 
-			srv := service.Service{
-				Name:    name,
-				Pattern: commandPattern,
-				Command: command,
-				Directory: directory,
-			}
-			services[name] = &srv
+			srv := service.NewService(
+				name,
+				commandPattern,
+				command,
+				directory)
+			services[name] = srv
 		}
 	}
 

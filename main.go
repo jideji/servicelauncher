@@ -32,8 +32,8 @@ func main() {
 	os.Exit(lastErrCode)
 }
 
-func resolveServices(services map[string]*service.Service, names ...string) []*service.Service {
-	var selected []*service.Service
+func resolveServices(services map[string]service.Service, names ...string) []service.Service {
+	var selected []service.Service
 	if len(names) > 0 {
 		for _, name := range names {
 			service, ok := services[name]
@@ -52,42 +52,46 @@ func resolveServices(services map[string]*service.Service, names ...string) []*s
 	return selected
 }
 
-func doAction(service *service.Service, action string) error {
-	running := service.IsRunning()
+func doAction(srv service.Service, action string) error {
+	running := srv.IsRunning()
 
 	if action == "status" {
 		if running {
-			pid, _ := service.Pid()
-			fmt.Printf("Service '%s' is running with pid %d.\n", service.Name, pid)
+			pid, _ := srv.Pid()
+			fmt.Printf("Service '%s' is running with pid %d.\n", srv.Name(), pid)
 		} else {
-			fmt.Printf("Service '%s' is not running.\n", service.Name)
+			fmt.Printf("Service '%s' is not running.\n", srv.Name())
 		}
 		return nil
 	}
 
 	if action == "stop" || action == "restart" {
 		if running {
-			pid, err := service.Pid()
+			pid, err := srv.Pid()
 			if err != nil {
 				return err
 			}
-			fmt.Printf("Killing service '%s' (process %d).\n", service.Name, pid)
-			service.Stop()
+			fmt.Printf("Killing service '%s' (process %d).\n", srv.Name(), pid)
+			srv.Stop()
 			running = false
 		} else {
-			fmt.Printf("Service '%s' not running.\n", service.Name)
+			fmt.Printf("Service '%s' not running.\n", srv.Name())
 		}
 	}
 
 	if action == "start" || action == "restart" {
 		if running {
-			return cmdError(fmt.Sprintf("Service '%s' already running. Try restart.", service.Name), 11)
+			return cmdError(fmt.Sprintf("Service '%s' already running. Try restart.", srv.Name()), 11)
 		}
-		p, err := service.Start()
+		err := srv.Start()
 		if err != nil {
 			return err
 		}
-		fmt.Printf("Service '%s' started with pid %d.\n", service.Name, p.Pid)
+		pid, err := srv.Pid()
+		if err != nil {
+			return err
+		}
+		fmt.Printf("Service '%s' started with pid %d.\n", srv.Name(), pid)
 	}
 	return nil
 }
