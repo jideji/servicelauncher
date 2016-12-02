@@ -100,8 +100,8 @@ type FakeService struct {
 func (s *FakeService) Name() string {
 	return s.name
 }
-func (s *FakeService) IsRunning() bool {
-	return s.running
+func (s *FakeService) IsRunning() (bool, error) {
+	return s.running, nil
 }
 func (s *FakeService) Pid() (int, error) {
 	return -1, nil

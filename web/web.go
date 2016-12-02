@@ -17,6 +17,7 @@ type GetServices struct {
 type ServiceStatus struct {
 	Name   string `json:"name"`
 	Status string `json:"status"`
+	Error  string `json:"error"`
 }
 
 type Web struct {
@@ -53,7 +54,12 @@ func getList(services service.Services) func(w http.ResponseWriter, r *http.Requ
 		var statuses []ServiceStatus
 		for _, s := range services {
 			var status string
-			if s.IsRunning() {
+			var errMsg string
+			running, err := s.IsRunning()
+			if err != nil {
+				errMsg = err.Error()
+			}
+			if running {
 				status = "running"
 			} else {
 				status = "stopped"
@@ -61,6 +67,7 @@ func getList(services service.Services) func(w http.ResponseWriter, r *http.Requ
 			statuses = append(statuses, ServiceStatus{
 				Name:   s.Name(),
 				Status: status,
+				Error:  errMsg,
 			})
 		}
 		sort.Sort(byName(statuses))

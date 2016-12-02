@@ -21,7 +21,7 @@ type ServiceImpl struct {
 type Services map[string]Service
 
 type Service interface {
-	IsRunning() bool
+	IsRunning() (bool, error)
 	Name() string
 	Pid() (int, error)
 	Start() error
@@ -73,7 +73,10 @@ func (s *ServiceImpl) Start() error {
 // Pid returns the process id of the running service.
 // Returns an error if process is not running.
 func (s *ServiceImpl) Pid() (int, error) {
-	p := s.getProcess()
+	p, err := s.getProcess()
+	if err != nil {
+		return -1, err
+	}
 	if p == nil {
 		return -1, errors.New("No process found.")
 	}
@@ -85,27 +88,35 @@ func (s *ServiceImpl) Name() string {
 }
 
 // IsRunning returns true if process is running.
-func (s *ServiceImpl) IsRunning() bool {
-	return s.getProcess() != nil
+func (s *ServiceImpl) IsRunning() (bool, error) {
+	process, err := s.getProcess()
+	if err != nil {
+		return false, err
+	}
+	return process != nil, nil
 }
 
 // Stop kills the running process.
 func (s *ServiceImpl) Stop() error {
-	p := s.getProcess()
-	if err := p.Kill(); err != nil {
+	p, err := s.getProcess()
+	if err != nil {
+		return err
+	}
+
+	if err = p.Kill(); err != nil {
 		return err
 	}
 	s.process = nil
 	return nil
 }
 
-func (s *ServiceImpl) getProcess() *procs.Process {
+func (s *ServiceImpl) getProcess() (*procs.Process, error) {
 	if s.process == nil {
 		pr, err := procs.FindByCommandLine(s.Pattern)
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 		s.process = pr
 	}
-	return s.process
+	return s.process, nil
 }

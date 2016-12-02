@@ -38,6 +38,8 @@ func main() {
 			if c, ok := err.(CmdError); ok {
 				println(c.Msg)
 				lastErrCode = c.Code
+			} else {
+				println(err.Error())
 			}
 		}
 	}
@@ -66,7 +68,10 @@ func resolveServices(services map[string]service.Service, names ...string) []ser
 }
 
 func doAction(srv service.Service, action string) error {
-	running := srv.IsRunning()
+	running, err := srv.IsRunning()
+	if err != nil {
+		return err
+	}
 
 	if action == "status" {
 		if running {
