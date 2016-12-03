@@ -3,12 +3,19 @@ language: go
 go:
   - 1.7
 
-build:
+before_install:
+  - mkdir -p $GOPATH/bin
 
-  ci:
-    - mkdir -p $GOPATH/bin
-    - curl https://glide.sh/get | sh
-    - glide install --force
-    - go build
+install:
+  - go get -u github.com/jstemmer/go-junit-report
+  - curl https://glide.sh/get | sh
+  - glide install --force
 
-script: go test -v `glide novendor`
+before_script:
+  - mkdir -p shippable/testresults
+
+script:
+  - go test -v `glide novendor` | tee test_output
+
+after_script:
+  - go-junit-report < test_output > shippable/testresults/report.xml
