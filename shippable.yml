@@ -10,3 +10,5 @@ build:
     - curl https://glide.sh/get | sh
     - glide install --force
     - go build
+
+script: go test -v `glide novendor`
