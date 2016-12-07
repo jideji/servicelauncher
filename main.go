@@ -7,6 +7,7 @@ import (
 	"github.com/jideji/servicelauncher/web"
 	"net/http"
 	"os"
+	"sort"
 )
 
 func main() {
@@ -63,6 +64,7 @@ func resolveServices(services map[string]service.Service, names ...string) []ser
 			selected = append(selected, service)
 		}
 	}
+	sort.Sort(byName(selected))
 
 	return selected
 }
@@ -138,3 +140,11 @@ type CmdError struct {
 func (c CmdError) Error() string {
 	return c.Msg
 }
+
+// ByName implements sort.Interface for []ServiceStatus based on
+// the Name field.
+type byName []service.Service
+
+func (a byName) Len() int           { return len(a) }
+func (a byName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a byName) Less(i, j int) bool { return a[i].Name() < a[j].Name() }
