@@ -70,6 +70,11 @@ func resolveServices(services map[string]service.Service, names ...string) []ser
 }
 
 func doAction(srv service.Service, action string) error {
+	if action == "list" {
+		fmt.Println(srv.Name())
+		return nil
+	}
+
 	running, err := srv.IsRunning()
 	if err != nil {
 		return err
