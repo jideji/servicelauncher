@@ -78,9 +78,9 @@ func doAction(srv service.Service, action string) error {
 	if action == "status" {
 		if running {
 			pid, _ := srv.Pid()
-			fmt.Printf("Service '%s' is running with pid %d.\n", srv.Name(), pid)
+			fmt.Printf("(\033[32mx\033[0m) Service '%s' is running with pid %d.\n", srv.Name(), pid)
 		} else {
-			fmt.Printf("Service '%s' is not running.\n", srv.Name())
+			fmt.Printf("( ) Service '%s' is not running.\n", srv.Name())
 		}
 		return nil
 	}
@@ -95,13 +95,13 @@ func doAction(srv service.Service, action string) error {
 			srv.Stop()
 			running = false
 		} else {
-			fmt.Printf("Service '%s' not running.\n", srv.Name())
+			fmt.Printf("(\033[33m!\033[0m) Service '%s' not running.\n", srv.Name())
 		}
 	}
 
 	if action == "start" || action == "restart" {
 		if running {
-			return cmdError(fmt.Sprintf("Service '%s' already running. Try restart.", srv.Name()), 11)
+			return cmdError(fmt.Sprintf("(\033[31m!\033[0m) Service '%s' already running. Try restart.", srv.Name()), 11)
 		}
 		err := srv.Start()
 		if err != nil {
