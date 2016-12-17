@@ -6,6 +6,7 @@ import (
 	"github.com/jideji/servicelauncher/service"
 	"os"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -15,12 +16,14 @@ func ScriptFile() string {
 #compdef servicelauncher
 # Script to place somewhere in your fpath
 # (see https://github.com/zsh-users/zsh-completions/blob/master/zsh-completions-howto.org)
-local -a options args
+local -a options args current_arg
 # All arguments excluding the command
 args=($words)
 args[1]=()
-# Call servicelauncher to resolve auto-complete candidates
-options=("${(@0)$(servicelauncher "$PREFIX" $args --autocomplete-options)}")
+# Where are we (excluding command)
+current_arg=$[ $CURRENT - 1 ]
+# call servicelauncher to resolve auto-complete candidates
+options=("${(@0)$(servicelauncher "$current_arg" "$PREFIX" $args --autocomplete-options)}")
 _describe 'values' options
 `)
 }
@@ -33,7 +36,11 @@ func IsAutocomplete() bool {
 
 // Autocomplete returns autocompletion candidates for given level
 func Autocomplete(serviceLoader service.Loader) {
-	options := autocomplete(serviceLoader, os.Args[1], os.Args[2:]...)
+	position, err := strconv.Atoi(os.Args[1])
+	if err != nil {
+		panic(err)
+	}
+	options := autocomplete(serviceLoader, position, os.Args[2], os.Args[3:]...)
 
 	fmt.Println(strings.Join(options, "\x00"))
 
@@ -49,7 +56,7 @@ func indexOfAutocomplete(args ...string) int {
 	return -1
 }
 
-func autocomplete(serviceLoader service.Loader, prefix string, args ...string) []string {
+func autocomplete(serviceLoader service.Loader, position int, prefix string, args ...string) []string {
 	// Remove autocomplete flag and anything coming after
 	ac := indexOfAutocomplete(args...)
 	if ac != -1 {
@@ -58,12 +65,12 @@ func autocomplete(serviceLoader service.Loader, prefix string, args ...string) [
 
 	// Remove prefix if present
 	if len(prefix) > 0 {
-		args = args[0 : len(args)-1]
+		args = args[0 : position-1]
 	}
 
 	// List configured services
 	// (No matching required - the shell will do that for us)
-	if len(args) >= 1 {
+	if position > 1 {
 		args = args[1:]
 		services := serviceLoader()
 		var names []string

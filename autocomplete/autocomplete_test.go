@@ -20,6 +20,7 @@ func TestIsNotAutoCompleteWhenMissingFlag(t *testing.T) {
 func TestAutoCompleteFirstLevelWithoutPrefix(t *testing.T) {
 	results := autocomplete(
 		serviceLoaderThatShouldNotBeCalled(t),
+		1,
 		noPrefix)
 
 	sort.Strings(results)
@@ -37,6 +38,7 @@ func TestAutoCompleteFirstLevelWithoutPrefix(t *testing.T) {
 func TestAutoCompleteFirstLevelWithPrefix(t *testing.T) {
 	results := autocomplete(
 		serviceLoaderThatShouldNotBeCalled(t),
+		1,
 		"lis",
 		"lis")
 
@@ -55,6 +57,7 @@ func TestAutoCompleteFirstLevelWithPrefix(t *testing.T) {
 func TestAutoCompleteServiceLevel(t *testing.T) {
 	results := autocomplete(
 		serviceLoader(srv("webserver"), srv("http-proxy")),
+		2,
 		noPrefix,
 		"status")
 
@@ -67,6 +70,7 @@ func TestAutoCompleteServiceLevel(t *testing.T) {
 func TestIgnoresEntriesAfterAutocompleteFlag(t *testing.T) {
 	results := autocomplete(
 		serviceLoaderThatShouldNotBeCalled(t),
+		1,
 		noPrefix,
 		"--autocomplete-options", "status")
 
