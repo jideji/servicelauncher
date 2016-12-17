@@ -9,7 +9,6 @@ import (
 	"github.com/jideji/servicelauncher/web"
 	"net/http"
 	"os"
-	"strings"
 )
 
 func main() {
@@ -68,17 +67,6 @@ func showHelp() {
 }
 
 func showZshAutocompleteScript() {
-	fmt.Println(strings.TrimSpace(`
-#compdef servicelauncher
-# Script to place somewhere in your fpath
-# (see https://github.com/zsh-users/zsh-completions/blob/master/zsh-completions-howto.org)
-local -a options args
-# All arguments excluding the command
-args=($words)
-args[1]=()
-# Call servicelauncher to resolve auto-complete candidates
-options=("${(@0)$(servicelauncher "$PREFIX" $args --autocomplete-options)}")
-_describe 'values' options
-`))
+	fmt.Println(autocomplete.ScriptFile())
 	os.Exit(0)
 }
