@@ -9,8 +9,9 @@ import (
 	"syscall"
 )
 
-// ServiceImpl represents a service that can be started.
-type ServiceImpl struct {
+// ExternalService lets services run separately.
+// A regex pattern is used to find a running instance of a service.
+type ExternalService struct {
 	name      string
 	Pattern   string
 	Command   string
@@ -18,14 +19,14 @@ type ServiceImpl struct {
 	process   *procs.Process
 }
 
-// NewService creates a service.
-func NewService(
+// NewExternalService creates a service.
+func NewExternalService(
 	name string,
 	Pattern string,
 	Command string,
 	Directory string) Service {
 
-	return &ServiceImpl{
+	return &ExternalService{
 		name:      name,
 		Pattern:   Pattern,
 		Command:   Command,
@@ -35,7 +36,7 @@ func NewService(
 
 // Start runs the service using the service command.
 // It redirects stdout+stderr to /tmp/<servicename>.log.
-func (s *ServiceImpl) Start() error {
+func (s *ExternalService) Start() error {
 	logfile, err := os.Create(fmt.Sprintf("/tmp/%s.log", s.name))
 	if err != nil {
 		return err
@@ -63,7 +64,7 @@ func (s *ServiceImpl) Start() error {
 
 // Pid returns the process id of the running service.
 // Returns an error if process is not running.
-func (s *ServiceImpl) Pid() (int, error) {
+func (s *ExternalService) Pid() (int, error) {
 	p, err := s.getProcess()
 	if err != nil {
 		return -1, err
@@ -75,12 +76,12 @@ func (s *ServiceImpl) Pid() (int, error) {
 }
 
 // Name returns the name of the service.
-func (s *ServiceImpl) Name() string {
+func (s *ExternalService) Name() string {
 	return s.name
 }
 
 // IsRunning returns true if process is running.
-func (s *ServiceImpl) IsRunning() (bool, error) {
+func (s *ExternalService) IsRunning() (bool, error) {
 	process, err := s.getProcess()
 	if err != nil {
 		return false, err
@@ -89,7 +90,7 @@ func (s *ServiceImpl) IsRunning() (bool, error) {
 }
 
 // Stop kills the running process.
-func (s *ServiceImpl) Stop() error {
+func (s *ExternalService) Stop() error {
 	p, err := s.getProcess()
 	if err != nil {
 		return err
@@ -102,7 +103,7 @@ func (s *ServiceImpl) Stop() error {
 	return nil
 }
 
-func (s *ServiceImpl) getProcess() (*procs.Process, error) {
+func (s *ExternalService) getProcess() (*procs.Process, error) {
 	if s.process == nil {
 		pr, err := procs.FindByCommandLine(s.Pattern)
 		if err != nil {

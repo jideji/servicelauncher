@@ -24,7 +24,7 @@ func LoadServices() service.Services {
 			commandPattern := p.MustGetString(prefix + ".pattern")
 			directory := p.GetString(prefix+".directory", "")
 
-			srv := service.NewService(
+			srv := service.NewExternalService(
 				name,
 				commandPattern,
 				command,
