@@ -48,10 +48,13 @@ func autocomplete(serviceLoader service.Loader, prefix string, args ...string) [
 	// List configured services
 	// (No matching required - the shell will do that for us)
 	if len(args) >= 1 {
+		args = args[1:]
 		services := serviceLoader()
 		var names []string
 		for name := range services {
-			names = append(names, name)
+			if !contains(args, name) {
+				names = append(names, name)
+			}
 		}
 		sort.Strings(names)
 		return names
@@ -63,4 +66,13 @@ func autocomplete(serviceLoader service.Loader, prefix string, args ...string) [
 		commands = append(commands, fmt.Sprintf("%s:%s", a.Name(), a.Description()))
 	}
 	return commands
+}
+
+func contains(haystack []string, needle string) bool {
+	for _, candidate := range haystack {
+		if candidate == needle {
+			return true
+		}
+	}
+	return false
 }
