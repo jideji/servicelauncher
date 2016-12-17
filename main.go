@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"github.com/jideji/servicelauncher/autocomplete"
 	"github.com/jideji/servicelauncher/config"
@@ -9,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"sort"
+	"strings"
 )
 
 func main() {
@@ -18,6 +20,10 @@ func main() {
 
 	if len(os.Args) < 2 || os.Args[1] == "--help" {
 		showHelp()
+	}
+
+	if os.Args[1] == "autocomplete-zsh" {
+		showZshAutocompleteScript()
 	}
 
 	action := os.Args[1]
@@ -123,19 +129,39 @@ func doAction(srv service.Service, action string) error {
 		}
 		fmt.Printf("Service '%s' started with pid %d.\n", srv.Name(), pid)
 	}
-	return nil
+
+	return errors.New("Unknown command " + action)
 }
 
 func showHelp() {
 	fmt.Fprint(os.Stderr, "SYNTAX:\n")
 	fmt.Fprintf(os.Stderr, "\t%s <action> [<service name>]\n", os.Args[0])
 	fmt.Fprintf(os.Stderr, "\t%s server\n", os.Args[0])
-	fmt.Fprint(os.Stderr, "Actions:\n")
-	fmt.Fprint(os.Stderr, "\tstart, stop, restart, status\n")
-	fmt.Fprint(os.Stderr, "Examples:\n")
+	fmt.Fprintln(os.Stderr, "\t\t- start a web server on port 8080")
+	fmt.Fprintf(os.Stderr, "\t%s autocomplete-zsh\n", os.Args[0])
+	fmt.Fprintln(os.Stderr, "\t\t- print autocomplete-script for zsh")
+	fmt.Fprintln(os.Stderr, "Actions:")
+	fmt.Fprintln(os.Stderr, "\tlist, restart, start, status, stop")
+	fmt.Fprintln(os.Stderr, "Examples:")
 	fmt.Fprintf(os.Stderr, "\t%s start httpserver\n", os.Args[0])
 	fmt.Fprintf(os.Stderr, "\t%s status\n", os.Args[0])
 	os.Exit(1)
+}
+
+func showZshAutocompleteScript() {
+	fmt.Println(strings.TrimSpace(`
+#compdef servicelauncher
+# Script to place somewhere in your fpath
+# (see https://github.com/zsh-users/zsh-completions/blob/master/zsh-completions-howto.org)
+local -a options args
+# All arguments excluding the command
+args=($words)
+args[1]=()
+# Call servicelauncher to resolve auto-complete candidates
+options=("${(@0)$(servicelauncher "$PREFIX" $args --autocomplete-options)}")
+_describe 'values' options
+`))
+	os.Exit(0)
 }
 
 func cmdError(msg string, code int) error {
