@@ -8,11 +8,14 @@ import (
 	"strings"
 )
 
-func IsAutoComplete() bool {
+// IsAutocomplete returns true if --autocomplete-options can be found
+// among arguments
+func IsAutocomplete() bool {
 	return indexOfAutocomplete(os.Args...) != -1
 }
 
-func Autocomplete(serviceLoader service.ServiceLoader) {
+// Autocomplete returns autocompletion candidates for given level
+func Autocomplete(serviceLoader service.Loader) {
 	options := autocomplete(serviceLoader, os.Args[1], os.Args[2:]...)
 
 	fmt.Println(strings.Join(options, "\x00"))
@@ -29,7 +32,7 @@ func indexOfAutocomplete(args ...string) int {
 	return -1
 }
 
-func autocomplete(serviceLoader service.ServiceLoader, prefix string, args ...string) []string {
+func autocomplete(serviceLoader service.Loader, prefix string, args ...string) []string {
 	// Remove autocomplete flag and anything coming after
 	ac := indexOfAutocomplete(args...)
 	if ac != -1 {

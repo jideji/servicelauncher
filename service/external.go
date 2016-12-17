@@ -9,7 +9,7 @@ import (
 	"syscall"
 )
 
-// Service represents a service that can be started.
+// ServiceImpl represents a service that can be started.
 type ServiceImpl struct {
 	name      string
 	Pattern   string
@@ -18,6 +18,7 @@ type ServiceImpl struct {
 	process   *procs.Process
 }
 
+// NewService creates a service.
 func NewService(
 	name string,
 	Pattern string,
@@ -73,6 +74,7 @@ func (s *ServiceImpl) Pid() (int, error) {
 	return p.Pid, nil
 }
 
+// Name returns the name of the service.
 func (s *ServiceImpl) Name() string {
 	return s.name
 }
