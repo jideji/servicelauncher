@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/jideji/servicelauncher/autocomplete"
 	"github.com/jideji/servicelauncher/config"
 	"github.com/jideji/servicelauncher/service"
 	"github.com/jideji/servicelauncher/web"
@@ -11,7 +12,11 @@ import (
 )
 
 func main() {
-	if len(os.Args) < 2 {
+	if autocomplete.IsAutoComplete() {
+		autocomplete.Autocomplete(func() service.Services { return config.LoadServices() })
+	}
+
+	if len(os.Args) < 2 || os.Args[1] == "--help" {
 		showHelp()
 	}
 
