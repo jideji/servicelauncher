@@ -2,6 +2,7 @@ package autocomplete
 
 import (
 	"fmt"
+	"github.com/jideji/servicelauncher/action"
 	"github.com/jideji/servicelauncher/service"
 	"os"
 	"sort"
@@ -40,12 +41,12 @@ func autocomplete(serviceLoader service.Loader, prefix string, args ...string) [
 	}
 
 	// Remove prefix if present
-	// (The autocomplete shell filters out the matching ones)
 	if len(prefix) > 0 {
 		args = args[0 : len(args)-1]
 	}
 
 	// List configured services
+	// (No matching required - the shell will do that for us)
 	if len(args) >= 1 {
 		services := serviceLoader()
 		var names []string
@@ -57,5 +58,9 @@ func autocomplete(serviceLoader service.Loader, prefix string, args ...string) [
 	}
 
 	// List commands
-	return []string{"list", "restart", "start", "status", "stop"}
+	var commands []string
+	for _, a := range action.All() {
+		commands = append(commands, fmt.Sprintf("%s:%s", a.Name(), a.Description()))
+	}
+	return commands
 }

@@ -3,6 +3,7 @@ package autocomplete
 import (
 	"github.com/jideji/servicelauncher/service"
 	"github.com/stretchr/testify/assert"
+	"sort"
 	"testing"
 )
 
@@ -21,8 +22,14 @@ func TestAutoCompleteFirstLevelWithoutPrefix(t *testing.T) {
 		serviceLoaderThatShouldNotBeCalled(t),
 		noPrefix)
 
+	sort.Strings(results)
 	assert.Equal(t,
-		[]string{"list", "restart", "start", "status", "stop"},
+		[]string{
+			"list:List available services",
+			"restart:Restart services",
+			"start:Start services",
+			"status:Check status of services",
+			"stop:Stop services"},
 		results,
 		"expected commands")
 }
@@ -33,8 +40,14 @@ func TestAutoCompleteFirstLevelWithPrefix(t *testing.T) {
 		"lis",
 		"lis")
 
+	sort.Strings(results)
 	assert.Equal(t,
-		[]string{"list", "restart", "start", "status", "stop"},
+		[]string{
+			"list:List available services",
+			"restart:Restart services",
+			"start:Start services",
+			"status:Check status of services",
+			"stop:Stop services"},
 		results,
 		"expected commands")
 }
@@ -57,8 +70,14 @@ func TestIgnoresEntriesAfterAutocompleteFlag(t *testing.T) {
 		noPrefix,
 		"--autocomplete-options", "status")
 
+	sort.Strings(results)
 	assert.Equal(t,
-		[]string{"list", "restart", "start", "status", "stop"},
+		[]string{
+			"list:List available services",
+			"restart:Restart services",
+			"start:Start services",
+			"status:Check status of services",
+			"stop:Stop services"},
 		results,
 		"expected commands")
 }

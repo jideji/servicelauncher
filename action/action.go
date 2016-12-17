@@ -44,6 +44,15 @@ func FindAction(name string) Action {
 	return actions[name]
 }
 
+// All returns all registered actions
+func All() []Action {
+	var all []Action
+	for _, action := range actions {
+		all = append(all, action)
+	}
+	return all
+}
+
 type listAction struct{}
 
 func (la *listAction) Name() string        { return "list" }
