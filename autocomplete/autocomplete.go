@@ -9,6 +9,7 @@ import (
 	"strings"
 )
 
+// ScriptFile returns a zsh file for the user to place somewhere in their fpath.
 func ScriptFile() string {
 	return strings.TrimSpace(`
 #compdef servicelauncher
