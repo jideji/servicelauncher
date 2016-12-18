@@ -74,28 +74,10 @@ func autocomplete(serviceLoader service.Loader, position int, prefix string, arg
 		args = args[1:]
 		services := serviceLoader()
 
-		nameSet := make(set)
-		for _, srv := range services.AsSlice() {
-			if !contains(args, srv.Name()) {
-				nameSet.Add(srv.Name())
-			}
-		}
-		names := nameSet.AsSortedSlice()
+		candidates := byName(services, args)
+		candidates = concat(candidates, byLabel(services, args))
 
-		labelSet := make(set)
-		for _, srv := range services.AsSlice() {
-			for _, label := range srv.Labels() {
-				if !contains(args, fmt.Sprintf("l:%s", label)) {
-					labelSet.Add(fmt.Sprintf("l\\:%s", label))
-				}
-			}
-		}
-		labels := labelSet.AsSortedSlice()
-		for _, label := range labels {
-			names = append(names, label)
-		}
-
-		return names
+		return candidates
 	}
 
 	// List commands
@@ -104,6 +86,45 @@ func autocomplete(serviceLoader service.Loader, position int, prefix string, arg
 		commands = append(commands, fmt.Sprintf("%s:%s", a.Name(), a.Description()))
 	}
 	return commands
+}
+
+func concat(to []string, from []string) []string {
+	for _, label := range from {
+		to = append(to, label)
+	}
+	return to
+}
+
+func byName(services *service.Services, args []string) []string {
+	nameSet := make(set)
+	for _, srv := range services.AsSlice() {
+		if !contains(args, srv.Name()) {
+			nameSet.Add(srv.Name())
+		}
+	}
+
+	return nameSet.AsSortedSlice()
+}
+
+func byLabel(services *service.Services, args []string) []string {
+	labelMap := make(map[string][]string)
+	for _, srv := range services.AsSlice() {
+		for _, label := range srv.Labels() {
+			if !contains(args, fmt.Sprintf("l:%s", label)) {
+				prefixedLabel := fmt.Sprintf("l\\:%s", label)
+				labelMap[prefixedLabel] = append(labelMap[prefixedLabel], srv.Name())
+			}
+		}
+	}
+	var labels []string
+	for labelName, services := range labelMap {
+		description := strings.Join(services, ",")
+		labels = append(labels, fmt.Sprintf("%s:%s", labelName, description))
+	}
+
+	sort.Strings(labels)
+
+	return labels
 }
 
 func contains(haystack []string, needle string) bool {

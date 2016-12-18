@@ -74,7 +74,11 @@ func TestAutoCompleteServiceLabels(t *testing.T) {
 		noPrefix, "")
 
 	assert.Equal(t,
-		[]string{"http-proxy", "webserver", "l\\:group1", "l\\:group2"},
+		[]string{
+			"http-proxy",
+			"webserver",
+			"l\\:group1:http-proxy",
+			"l\\:group2:http-proxy,webserver"},
 		results,
 		"expected commands")
 }
