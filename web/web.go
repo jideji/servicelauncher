@@ -24,7 +24,7 @@ type Web struct {
 	listener net.Listener
 }
 
-func WebHandler(services service.Services) http.Handler {
+func WebHandler(services *service.Services) http.Handler {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/api", getList(services)).Methods("GET")
@@ -33,26 +33,26 @@ func WebHandler(services service.Services) http.Handler {
 	return r
 }
 
-func start(services service.Services) func(http.ResponseWriter, *http.Request) {
+func start(services *service.Services) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		name := mux.Vars(r)["servicename"]
 
-		service, ok := services[name]
-		if !ok {
+		services := services.AsSlice(name)
+		if len(services) == 0 {
 			w.WriteHeader(404)
 			w.Write([]byte(fmt.Sprintf("Unknown service '%s'", name)))
 			return
 		}
-		service.Start()
+		services[0].Start()
 
 		w.WriteHeader(202)
 	}
 }
 
-func getList(services service.Services) func(w http.ResponseWriter, r *http.Request) {
+func getList(services *service.Services) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var statuses []ServiceStatus
-		for _, s := range services {
+		for _, s := range services.AsSlice() {
 			var status string
 			var errMsg string
 			running, err := s.IsRunning()

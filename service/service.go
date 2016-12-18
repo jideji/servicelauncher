@@ -7,15 +7,35 @@ import (
 )
 
 // Services is a map of service name to service
-type Services map[string]Service
+type Services struct {
+	byName  map[string]Service
+	byLabel map[string][]Service
+}
+
+func NewServices(services []Service) *Services {
+	s := Services{
+		byName:  make(map[string]Service),
+		byLabel: make(map[string][]Service),
+	}
+
+	for _, srv := range services {
+		s.byName[srv.Name()] = srv
+		for _, label := range srv.Labels() {
+			s.byLabel[label] = append(s.byLabel[label], srv)
+		}
+	}
+
+	return &s
+}
 
 // Loader is a function for loading Services
-type Loader func() Services
+type Loader func() *Services
 
 // Service represents a program that can be controlled
 type Service interface {
 	IsRunning() (bool, error)
 	Name() string
+	Labels() []string
 	Pid() (int, error)
 	Start() error
 	Stop() error
@@ -27,15 +47,22 @@ func (s *Services) AsSlice(names ...string) []Service {
 	var selected []Service
 	if len(names) > 0 {
 		for _, name := range names {
-			service, ok := (*s)[name]
+			service, ok := s.byName[name]
 			if !ok {
-				println(fmt.Sprintf("No service named '%s' found.", name))
-				os.Exit(10)
+				services, ok := s.byLabel[name]
+				if !ok {
+					println(fmt.Sprintf("No service or label named '%s' found.", name))
+					os.Exit(10)
+				}
+				for _, service = range services {
+					selected = append(selected, service)
+				}
+			} else {
+				selected = append(selected, service)
 			}
-			selected = append(selected, service)
 		}
 	} else {
-		for _, service := range *s {
+		for _, service := range s.byName {
 			selected = append(selected, service)
 		}
 	}

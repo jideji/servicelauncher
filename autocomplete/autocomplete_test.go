@@ -100,19 +100,19 @@ func TestIgnoresEntriesAfterAutocompleteFlag(t *testing.T) {
 }
 
 func serviceLoaderThatShouldNotBeCalled(t *testing.T) service.Loader {
-	return func() service.Services {
+	return func() *service.Services {
 		t.Error("Service loader called")
-		return service.Services{}
+		return service.NewServices([]service.Service{})
 	}
 }
 
 func serviceLoader(services ...service.Service) service.Loader {
-	s := make(service.Services)
+	var s []service.Service
 	for _, srv := range services {
-		s[srv.Name()] = srv
+		s = append(s, srv)
 	}
-	return func() service.Services {
-		return s
+	return func() *service.Services {
+		return service.NewServices(s)
 	}
 }
 
@@ -125,5 +125,6 @@ type DummyService struct{ name string }
 func (s *DummyService) Start() error             { return nil }
 func (s *DummyService) Pid() (int, error)        { return -1, nil }
 func (s *DummyService) Name() string             { return s.name }
+func (s *DummyService) Labels() []string         { return []string{} }
 func (s *DummyService) IsRunning() (bool, error) { return false, nil }
 func (s *DummyService) Stop() error              { return nil }

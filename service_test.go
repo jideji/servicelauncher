@@ -13,7 +13,7 @@ import (
 )
 
 func TestReturnsEmptyListWhenNoServicesConfigured(t *testing.T) {
-	srv := httptest.NewServer(web.WebHandler(service.Services{}))
+	srv := httptest.NewServer(web.WebHandler(service.NewServices([]service.Service{})))
 	defer srv.Close()
 
 	actual := getList(t, srv.URL+"/api")
@@ -26,10 +26,10 @@ func TestReturnsEmptyListWhenNoServicesConfigured(t *testing.T) {
 }
 
 func TestReturnsStateOfConfiguredServices(t *testing.T) {
-	srv := httptest.NewServer(web.WebHandler(service.Services{
-		"name1": &FakeService{"name1", true},
-		"name2": &FakeService{"name2", false},
-	}))
+	srv := httptest.NewServer(web.WebHandler(service.NewServices([]service.Service{
+		&FakeService{"name1", true},
+		&FakeService{"name2", false},
+	})))
 	defer srv.Close()
 
 	actual := getList(t, srv.URL+"/api")
@@ -46,9 +46,9 @@ func TestReturnsStateOfConfiguredServices(t *testing.T) {
 
 func TestStartsService(t *testing.T) {
 	fake := FakeService{"name", false}
-	srv := httptest.NewServer(web.WebHandler(service.Services{
-		"name": &fake,
-	}))
+	srv := httptest.NewServer(web.WebHandler(service.NewServices([]service.Service{
+		&fake,
+	})))
 	defer srv.Close()
 
 	post(t, srv.URL+"/api/name/start")
@@ -99,6 +99,9 @@ type FakeService struct {
 
 func (s *FakeService) Name() string {
 	return s.name
+}
+func (s *FakeService) Labels() []string {
+	return nil
 }
 func (s *FakeService) IsRunning() (bool, error) {
 	return s.running, nil

@@ -13,7 +13,7 @@ import (
 
 func main() {
 	if autocomplete.IsAutocomplete() {
-		autocomplete.Autocomplete(func() service.Services { return config.LoadServices() })
+		autocomplete.Autocomplete(func() *service.Services { return config.LoadServices() })
 	}
 
 	if len(os.Args) < 2 || os.Args[1] == "--help" {

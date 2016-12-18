@@ -74,9 +74,9 @@ func autocomplete(serviceLoader service.Loader, position int, prefix string, arg
 		args = args[1:]
 		services := serviceLoader()
 		var names []string
-		for name := range services {
-			if !contains(args, name) {
-				names = append(names, name)
+		for _, srv := range services.AsSlice() {
+			if !contains(args, srv.Name()) {
+				names = append(names, srv.Name())
 			}
 		}
 		sort.Strings(names)

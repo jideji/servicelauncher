@@ -13,24 +13,27 @@ import (
 // A regex pattern is used to find a running instance of a service.
 type ExternalService struct {
 	name      string
-	Pattern   string
-	Command   string
-	Directory string
+	pattern   string
+	command   string
+	directory string
+	labels    []string
 	process   *procs.Process
 }
 
 // NewExternalService creates a service.
 func NewExternalService(
 	name string,
-	Pattern string,
-	Command string,
-	Directory string) Service {
+	pattern string,
+	cmd string,
+	labels []string,
+	dir string) Service {
 
 	return &ExternalService{
 		name:      name,
-		Pattern:   Pattern,
-		Command:   Command,
-		Directory: Directory,
+		pattern:   pattern,
+		command:   cmd,
+		labels:    labels,
+		directory: dir,
 	}
 }
 
@@ -42,8 +45,8 @@ func (s *ExternalService) Start() error {
 		return err
 	}
 
-	cmd := exec.Command("bash", "-c", s.Command)
-	cmd.Dir = s.Directory
+	cmd := exec.Command("bash", "-c", s.command)
+	cmd.Dir = s.directory
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	cmd.Stdout = logfile
 	cmd.Stderr = logfile
@@ -80,6 +83,11 @@ func (s *ExternalService) Name() string {
 	return s.name
 }
 
+// Labels returns the label given to service, if any.
+func (s *ExternalService) Labels() []string {
+	return s.labels
+}
+
 // IsRunning returns true if process is running.
 func (s *ExternalService) IsRunning() (bool, error) {
 	process, err := s.getProcess()
@@ -105,7 +113,7 @@ func (s *ExternalService) Stop() error {
 
 func (s *ExternalService) getProcess() (*procs.Process, error) {
 	if s.process == nil {
-		pr, err := procs.FindByCommandLine(s.Pattern)
+		pr, err := procs.FindByCommandLine(s.pattern)
 		if err != nil {
 			return nil, err
 		}
