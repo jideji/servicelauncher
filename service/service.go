@@ -45,7 +45,7 @@ type Service interface {
 // AsSlice returns the given services, sorted by name
 // If no service names are given, all are returned
 func (s *Services) AsSlice(names ...string) []Service {
-	var selected []Service
+	m := make(map[Service]interface{})
 	if len(names) > 0 {
 		for _, name := range names {
 			if strings.HasPrefix(name, "l:") {
@@ -56,7 +56,7 @@ func (s *Services) AsSlice(names ...string) []Service {
 					os.Exit(10)
 				}
 				for _, service := range services {
-					selected = append(selected, service)
+					m[service] = nil
 				}
 				continue
 			}
@@ -66,12 +66,17 @@ func (s *Services) AsSlice(names ...string) []Service {
 				println(fmt.Sprintf("No service named '%s' found.", name))
 				os.Exit(10)
 			}
-			selected = append(selected, service)
+			m[service] = nil
 		}
 	} else {
 		for _, service := range s.byName {
-			selected = append(selected, service)
+			m[service] = nil
 		}
+	}
+
+	var selected []Service
+	for key := range m {
+		selected = append(selected, key)
 	}
 	sort.Sort(byName(selected))
 

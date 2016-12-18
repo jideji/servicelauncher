@@ -31,6 +31,32 @@ func TestCanLookupByLabel(t *testing.T) {
 	assert.Equal(t, service2, actual[1])
 }
 
+func TestDoesNotReturnServicesTwiceGivenNames(t *testing.T) {
+	service := srv("name-1")
+
+	services := NewServices([]Service{service})
+
+	actual := services.AsSlice("name-1", "name-1")
+
+	assert.Len(t, actual, 1, "one service")
+	assert.Equal(t, service, actual[0])
+}
+
+func TestDoesNotReturnServicesTwiceGivenNamesAndLabels(t *testing.T) {
+	service1 := srv("name-1", "a-label")
+	service2 := srv("name-2", "a-label", "different-label")
+	service3 := srv("name-3", "different-label")
+
+	services := NewServices([]Service{service1, service2, service3})
+
+	actual := services.AsSlice("name-1", "l:different-label")
+
+	assert.Len(t, actual, 3, "three services")
+	assert.Equal(t, service1, actual[0])
+	assert.Equal(t, service2, actual[1])
+	assert.Equal(t, service3, actual[2])
+}
+
 func srv(name string, labels ...string) Service {
 	return &DummyService{name, labels}
 }
