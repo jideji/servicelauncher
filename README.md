@@ -10,6 +10,8 @@ Each service is configured with the format:
 ```
 service.<servicename>.pattern = <regex for finding command in ps output>
 service.<servicename>.command = <command for starting service>
+service.<servicename>.directory = <working directory for service - OPTIONAL>
+service.<servicename>.labels = <comma separated list of service labels - OPTIONAL>
 ```
 
 e.g.
@@ -17,6 +19,8 @@ e.g.
 ```
 service.httpserver.pattern = Python -m SimpleHTTPServer 8080
 service.httpserver.command = python -m SimpleHTTPServer 8080
+service.httpserver.directory = /usr/share/htdocs
+service.httpserver.labels = server,python
 
 service.ncserver.pattern = ^nc -l 8081$
 service.ncserver.command = nc -l 8081

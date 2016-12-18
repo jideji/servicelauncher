@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"sort"
+	"strings"
 )
 
 // Services is a map of service name to service
@@ -47,19 +48,25 @@ func (s *Services) AsSlice(names ...string) []Service {
 	var selected []Service
 	if len(names) > 0 {
 		for _, name := range names {
-			service, ok := s.byName[name]
-			if !ok {
+			if strings.HasPrefix(name, "l:") {
+				name = name[2:]
 				services, ok := s.byLabel[name]
 				if !ok {
-					println(fmt.Sprintf("No service or label named '%s' found.", name))
+					println(fmt.Sprintf("No label named '%s' found.", name))
 					os.Exit(10)
 				}
-				for _, service = range services {
+				for _, service := range services {
 					selected = append(selected, service)
 				}
-			} else {
-				selected = append(selected, service)
+				continue
 			}
+
+			service, ok := s.byName[name]
+			if !ok {
+				println(fmt.Sprintf("No service named '%s' found.", name))
+				os.Exit(10)
+			}
+			selected = append(selected, service)
 		}
 	} else {
 		for _, service := range s.byName {

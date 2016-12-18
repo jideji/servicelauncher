@@ -1,10 +1,9 @@
-package main
+package web
 
 import (
 	"bytes"
 	"encoding/json"
 	"github.com/jideji/servicelauncher/service"
-	"github.com/jideji/servicelauncher/web"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -13,12 +12,12 @@ import (
 )
 
 func TestReturnsEmptyListWhenNoServicesConfigured(t *testing.T) {
-	srv := httptest.NewServer(web.WebHandler(service.NewServices([]service.Service{})))
+	srv := httptest.NewServer(WebHandler(service.NewServices([]service.Service{})))
 	defer srv.Close()
 
-	actual := getList(t, srv.URL+"/api")
+	actual := requestList(t, srv.URL+"/api")
 
-	var expected []web.ServiceStatus
+	var expected []ServiceStatus
 
 	if !reflect.DeepEqual(expected, actual) {
 		t.Errorf("Got %s ; Wanted %s", expected, actual)
@@ -26,15 +25,15 @@ func TestReturnsEmptyListWhenNoServicesConfigured(t *testing.T) {
 }
 
 func TestReturnsStateOfConfiguredServices(t *testing.T) {
-	srv := httptest.NewServer(web.WebHandler(service.NewServices([]service.Service{
+	srv := httptest.NewServer(WebHandler(service.NewServices([]service.Service{
 		&FakeService{"name1", true},
 		&FakeService{"name2", false},
 	})))
 	defer srv.Close()
 
-	actual := getList(t, srv.URL+"/api")
+	actual := requestList(t, srv.URL+"/api")
 
-	expected := []web.ServiceStatus{
+	expected := []ServiceStatus{
 		{Name: "name1", Status: "running"},
 		{Name: "name2", Status: "stopped"},
 	}
@@ -46,7 +45,7 @@ func TestReturnsStateOfConfiguredServices(t *testing.T) {
 
 func TestStartsService(t *testing.T) {
 	fake := FakeService{"name", false}
-	srv := httptest.NewServer(web.WebHandler(service.NewServices([]service.Service{
+	srv := httptest.NewServer(WebHandler(service.NewServices([]service.Service{
 		&fake,
 	})))
 	defer srv.Close()
@@ -58,7 +57,7 @@ func TestStartsService(t *testing.T) {
 	}
 }
 
-func getList(t *testing.T, url string) []web.ServiceStatus {
+func requestList(t *testing.T, url string) []ServiceStatus {
 	resp, err := http.Get(url)
 	if err != nil {
 		t.Fatal(err)
@@ -71,7 +70,7 @@ func getList(t *testing.T, url string) []web.ServiceStatus {
 
 	d := json.NewDecoder(bytes.NewReader(b))
 
-	gs := &web.GetServices{}
+	gs := &GetServices{}
 	err = d.Decode(gs)
 	if err != nil {
 		t.Fatalf("Failed decoding response: %s\nResponse:%s", err.Error(), string(b))
