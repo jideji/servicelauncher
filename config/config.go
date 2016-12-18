@@ -42,7 +42,7 @@ func LoadServices() *service.Services {
 
 func parseLabels(labelsStr string) []string {
 	var labels []string
-	splitLabels := strings.Split(labelsStr, " ")
+	splitLabels := strings.Split(labelsStr, ",")
 	for _, label := range splitLabels {
 		trimmed := strings.TrimSpace(label)
 		if len(trimmed) > 0 {

@@ -73,13 +73,28 @@ func autocomplete(serviceLoader service.Loader, position int, prefix string, arg
 	if position > 1 {
 		args = args[1:]
 		services := serviceLoader()
-		var names []string
+
+		nameSet := make(set)
 		for _, srv := range services.AsSlice() {
 			if !contains(args, srv.Name()) {
-				names = append(names, srv.Name())
+				nameSet.Add(srv.Name())
 			}
 		}
-		sort.Strings(names)
+		names := nameSet.AsSortedSlice()
+
+		labelSet := make(set)
+		for _, srv := range services.AsSlice() {
+			for _, label := range srv.Labels() {
+				if !contains(args, fmt.Sprintf("l:%s", label)) {
+					labelSet.Add(fmt.Sprintf("l\\:%s", label))
+				}
+			}
+		}
+		labels := labelSet.AsSortedSlice()
+		for _, label := range labels {
+			names = append(names, label)
+		}
+
 		return names
 	}
 
@@ -98,4 +113,25 @@ func contains(haystack []string, needle string) bool {
 		}
 	}
 	return false
+}
+
+type set map[string]interface{}
+
+func (s *set) AddAll(keys []string) {
+	for _, key := range keys {
+		s.Add(key)
+	}
+}
+
+func (s *set) Add(key string) {
+	(*s)[key] = nil
+}
+
+func (s *set) AsSortedSlice() []string {
+	var slice []string
+	for key := range *s {
+		slice = append(slice, key)
+	}
+	sort.Strings(slice)
+	return slice
 }
