@@ -16,14 +16,9 @@ func ScriptFile() string {
 #compdef servicelauncher
 # Script to place somewhere in your fpath
 # (see https://github.com/zsh-users/zsh-completions/blob/master/zsh-completions-howto.org)
-local -a options args current_arg
-# All arguments excluding the command
-args=($words)
-args[1]=()
-# Where are we (excluding command)
-current_arg=$[ $CURRENT - 1 ]
+local -a options
 # call servicelauncher to resolve auto-complete candidates
-options=("${(@0)$(servicelauncher "$current_arg" "$PREFIX" $args --autocomplete-options)}")
+options=("${(@0)$(servicelauncher "$CURRENT" "$PREFIX" $words --autocomplete-options)}")
 _describe 'values' options
 `)
 }
@@ -57,6 +52,10 @@ func indexOfAutocomplete(args ...string) int {
 }
 
 func autocomplete(serviceLoader service.Loader, position int, prefix string, args ...string) []string {
+	// Remove command
+	args = args[1:]
+	position--
+
 	// Remove autocomplete flag and anything coming after
 	ac := indexOfAutocomplete(args...)
 	if ac != -1 {
@@ -65,7 +64,7 @@ func autocomplete(serviceLoader service.Loader, position int, prefix string, arg
 
 	// Remove prefix if present
 	if len(prefix) > 0 {
-		args = args[0 : position-1]
+		remove(args, position-1)
 	}
 
 	// List configured services
@@ -86,6 +85,11 @@ func autocomplete(serviceLoader service.Loader, position int, prefix string, arg
 		commands = append(commands, fmt.Sprintf("%s:%s", a.Name(), a.Description()))
 	}
 	return commands
+}
+
+func remove(a []string, i int) {
+	a[i] = a[len(a)-1]
+	a = a[:len(a)-1]
 }
 
 func concat(to []string, from []string) []string {

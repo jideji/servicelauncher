@@ -7,10 +7,13 @@ import (
 	"testing"
 )
 
-const noPrefix = ""
+const (
+	noPrefix    = ""
+	commandName = "servicelauncher"
+)
 
 func TestIsAutoCompleteWhenFlagSet(t *testing.T) {
-	assert.Equal(t, 1, indexOfAutocomplete("arg", "--autocomplete-options"), "index of flag")
+	assert.Equal(t, 2, indexOfAutocomplete("arg", commandName, "--autocomplete-options"), "index of flag")
 }
 
 func TestIsNotAutoCompleteWhenMissingFlag(t *testing.T) {
@@ -20,8 +23,9 @@ func TestIsNotAutoCompleteWhenMissingFlag(t *testing.T) {
 func TestAutoCompleteCommandsWithoutPrefix(t *testing.T) {
 	results := autocomplete(
 		serviceLoaderThatShouldNotBeCalled(t),
-		1,
-		noPrefix)
+		2,
+		noPrefix,
+		commandName)
 
 	sort.Strings(results)
 	assert.Equal(t,
@@ -38,9 +42,9 @@ func TestAutoCompleteCommandsWithoutPrefix(t *testing.T) {
 func TestAutoCompleteCommandsWithPrefix(t *testing.T) {
 	results := autocomplete(
 		serviceLoaderThatShouldNotBeCalled(t),
-		1,
+		2,
 		"lis",
-		"lis")
+		commandName, "lis")
 
 	sort.Strings(results)
 	assert.Equal(t,
@@ -57,9 +61,9 @@ func TestAutoCompleteCommandsWithPrefix(t *testing.T) {
 func TestAutoCompleteServices(t *testing.T) {
 	results := autocomplete(
 		serviceLoader(srv("webserver"), srv("http-proxy")),
-		2,
+		3,
 		noPrefix,
-		"status")
+		commandName, "status")
 
 	assert.Equal(t,
 		[]string{"http-proxy", "webserver"},
@@ -70,8 +74,9 @@ func TestAutoCompleteServices(t *testing.T) {
 func TestAutoCompleteServiceLabels(t *testing.T) {
 	results := autocomplete(
 		serviceLoader(srv("webserver", "group2"), srv("http-proxy", "group1", "group2")),
-		2,
-		noPrefix, "")
+		3,
+		noPrefix,
+		commandName, "start")
 
 	assert.Equal(t,
 		[]string{
@@ -86,9 +91,9 @@ func TestAutoCompleteServiceLabels(t *testing.T) {
 func TestSkipsServicesAlreadyGiven(t *testing.T) {
 	results := autocomplete(
 		serviceLoader(srv("webserver"), srv("http-proxy")),
-		2,
+		3,
 		noPrefix,
-		"status", "webserver")
+		commandName, "status", "webserver")
 
 	assert.Equal(t,
 		[]string{"http-proxy"},
@@ -96,12 +101,25 @@ func TestSkipsServicesAlreadyGiven(t *testing.T) {
 		"expected commands")
 }
 
+func TestSkipsServicesAlreadyGivenWithPrefix(t *testing.T) {
+	results := autocomplete(
+		serviceLoader(srv("webserver"), srv("http-proxy"), srv("daemon")),
+		4,
+		"d",
+		commandName, "status", "webserver", "d", "http-proxy")
+
+	assert.Equal(t,
+		[]string{"daemon"},
+		results,
+		"expected commands")
+}
+
 func TestIgnoresEntriesAfterAutocompleteFlag(t *testing.T) {
 	results := autocomplete(
 		serviceLoaderThatShouldNotBeCalled(t),
-		1,
+		2,
 		noPrefix,
-		"--autocomplete-options", "status")
+		commandName, "--autocomplete-options", "status")
 
 	sort.Strings(results)
 	assert.Equal(t,
